@@ -1,113 +1,176 @@
-import Image from "next/image";
+"use client";
+import { Icon } from "@iconify/react";
+import Folder from "@/components/Folder";
+import { useState } from "react";
+import Editor from "@monaco-editor/react";
+
+type Folder = {
+  name: string;
+  folders?: Folder[];
+};
 
 export default function Home() {
+  let importedNodes: Folder[] = [
+    {
+      name: "Home",
+      folders: [
+        {
+          name: "Movies",
+          folders: [
+            {
+              name: "Action",
+              folders: [
+                {
+                  name: "Superhero",
+                  folders: [
+                    {
+                      name: "Marvel",
+                      folders: [
+                        {
+                          name: "Spiderman.mp4",
+                        },
+                      ],
+                    },
+                    {
+                      name: "DC",
+                      folders: [{ name: "The Batman.mp4" }],
+                    },
+                  ],
+                },
+                { name: "Martial Arts", folders: [] },
+              ],
+            },
+            {
+              name: "Comedy",
+              folders: [],
+            },
+            {
+              name: "Drama",
+              folders: [
+                { name: "Courtroom", folders: [] },
+                { name: "Thriller", folders: [] },
+              ],
+            },
+          ],
+        },
+        {
+          name: "Music",
+          folders: [
+            { name: "Rock", folders: [] },
+            { name: "Pop", folders: [] },
+            { name: "Jazz", folders: [] },
+          ],
+        },
+        {
+          name: "Pictures",
+          folders: [],
+        },
+        {
+          name: "Documents",
+          folders: [
+            {
+              name: "Work",
+              folders: [
+                {
+                  name: "Invoices",
+                  folders: [
+                    { name: "Invoice 1.pdf" },
+                    { name: "Invoice 2.pdf" },
+                  ],
+                },
+              ],
+            },
+            {
+              name: "Personal",
+              folders: [
+                {
+                  name: "Letters",
+                  folders: [
+                    { name: "Letter to Mom.docx" },
+                    { name: "Letter to Dad.docx" },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+        {
+          name: "passwords.txt",
+        },
+      ],
+    },
+  ];
+
+  const [nodes, setNodes] = useState<Folder[]>(importedNodes);
+
+  const handleJsonChange = (value: string | undefined) => {
+    if (value) {
+      try {
+        const updatedJson = JSON.parse(value);
+        setNodes(updatedJson);
+      } catch (error) {
+        console.error("Invalid JSON", error);
+      }
+    }
+  };
+
+  const updateFolder = (updatedFolder: Folder) => {
+    const updateTree = (nodes: Folder[], updatedFolder: Folder): Folder[] => {
+      return nodes.map((folder) => {
+        if (folder.name === updatedFolder.name) {
+          return updatedFolder;
+        }
+        if (folder.folders) {
+          return {
+            ...folder,
+            folders: updateTree(folder.folders, updatedFolder),
+          };
+        }
+        return folder;
+      });
+    };
+
+    setNodes(updateTree(nodes, updatedFolder));
+  };
+
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className="z-10 w-full max-w-5xl items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Get started by editing&nbsp;
-          <code className="font-mono font-bold">src/app/page.tsx</code>
-        </p>
-        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:size-auto lg:bg-none">
-          <a
-            className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className="dark:invert"
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
+    <main className='flex flex-col h-screen p-10 mb-10'>
+      <h1 className='my-2 font-bold'>Tree view example with React JS:</h1>
+      <div className='text-xs text-slate-500 mb-4 text-balance bg-slate-200 rounded-xl px-4 py-2'>
+        This is a simple tree view example using React JS and recursive logic
+        pattern.{" "}
+        <span className='italic font-bold'>
+          Click on the folder icons to expand/collapse the folders.You can also
+          play with the JSON editor to see the changes in the tree view.
+        </span>
+        <span className='text-red-400 flex flex-row items-center gap-x-2 my-2'>
+          <Icon icon='mdi:alert-outline' className='text-xl' />
+          <p>
+            It is a beta version, the full set of features are not implemented
+            yet.
+          </p>
+        </span>
+      </div>
+      <div className='grid grid-cols-2 w-full gap-x-2 h-[475px]'>
+        <ul className='px-6 w-full border overflow-auto'>
+          {nodes.map((folder) => (
+            <Folder key={folder.name} folder={folder} onUpdate={updateFolder} />
+          ))}
+        </ul>
+
+        <div className='border overflow-auto text-xs text-purple-400 bg-slate-800'>
+          <Editor
+            height='100%'
+            defaultLanguage='json'
+            value={JSON.stringify(nodes, null, 2)}
+            onChange={handleJsonChange}
+            theme='vs-dark'
+          />
         </div>
       </div>
-
-      <div className="relative z-[-1] flex place-items-center before:absolute before:h-[300px] before:w-full before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-full after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700 before:dark:opacity-10 after:dark:from-sky-900 after:dark:via-[#0141ff] after:dark:opacity-40 sm:before:w-[480px] sm:after:w-[240px] before:lg:h-[360px]">
-        <Image
-          className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className="mb-32 grid text-center lg:mb-0 lg:w-full lg:max-w-5xl lg:grid-cols-4 lg:text-left">
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Docs{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Find in-depth information about Next.js features and API.
-          </p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Learn{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Learn about Next.js in an interactive course with&nbsp;quizzes!
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Templates{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Explore starter templates for Next.js.
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Deploy{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-balance text-sm opacity-50">
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
+      <footer className='text-xs text-slate-500 mt-4 w-full text-center flex justify-center items-center'>
+        <p>Copyright &copy; Mueen Hossain - 2024</p>
+      </footer>
     </main>
   );
 }
