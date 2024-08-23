@@ -1,6 +1,6 @@
 import { Folder } from "@/types/Folder";
 
-export async function parseDirectoryHandle(
+export default async function parseDirectoryHandle(
   directoryHandle: FileSystemDirectoryHandle
 ): Promise<Folder> {
   const folders: Folder[] = [];
