@@ -7,12 +7,15 @@ type Folder = {
   folders?: Folder[];
 };
 
-type FolderProps = {
+export default function Folder({
+  folder,
+  onUpdate,
+  onDelete,
+}: {
   folder: Folder;
-  onUpdate: (updatedFolder: Folder) => void; // Added onUpdate prop
-};
-
-export default function Folder({ folder, onUpdate }: FolderProps) {
+  onUpdate: (updatedFolder: Folder) => void;
+  onDelete: (folderName: string) => void;
+}) {
   const [isOpen, setIsOpen] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
   const [newName, setNewName] = useState("");
@@ -27,9 +30,7 @@ export default function Folder({ folder, onUpdate }: FolderProps) {
       : { name: newName };
 
     const updatedFolders = [...(folder.folders || []), newItem];
-    const updatedFolder = { ...folder, folders: updatedFolders };
-
-    onUpdate(updatedFolder); // Notify parent of the update
+    onUpdate({ ...folder, folders: updatedFolders });
 
     setIsAdding(false);
     setNewName("");
@@ -42,15 +43,15 @@ export default function Folder({ folder, onUpdate }: FolderProps) {
     setIsAdding(true);
   };
 
-  const handleFolderClick = () => {
-    setIsOpen(!isOpen);
+  const handleDeleteClick = () => {
+    onDelete(folder.name);
   };
 
   return (
     <li className='my-1 transition-all duration-300' key={folder.name}>
-      <span className='flex flex-row items-center text-xs ml-2 gap-x-1.5 bg-slate-100 w-fit pl-2 pr-2 py-1'>
+      <span className='flex flex-row items-center text-xs ml-2 gap-x-1.5 bg-slate-100 w-fit pl-2 pr-2 py-1 rounded-full'>
         {folder.folders && folder.folders.length > 0 && (
-          <button onClick={handleFolderClick}>
+          <button onClick={() => setIsOpen(!isOpen)}>
             <Icon
               icon='mdi:chevron-right'
               className={`size-4 text-slate-900 ${isOpen ? "rotate-90" : ""}`}
@@ -63,7 +64,7 @@ export default function Folder({ folder, onUpdate }: FolderProps) {
             className='text-lg text-blue-500'
           />
         ) : (
-          <Icon icon='mdi:file' className='text-lg text-slate-800' />
+          <Icon icon='mdi:file' className='text-lg text-slate-400' />
         )}
         {folder.name}
         {folder.folders && (
@@ -74,8 +75,16 @@ export default function Folder({ folder, onUpdate }: FolderProps) {
             <Icon icon='mdi:plus' className='text-xs text-slate-400' />
           </button>
         )}
+        {/* Delete button */}
+        <button
+          className='border border-slate-300 rounded-full ml-2'
+          onClick={handleDeleteClick}
+        >
+          <Icon icon='mdi:trash-can-outline' className='text-xs text-red-400' />
+        </button>
       </span>
 
+      {/* Conditionally render the input field just below the current folder */}
       {isAdding && activeFolder === folder.name && (
         <div className='pl-8 mt-2 flex items-center'>
           <input
@@ -114,7 +123,18 @@ export default function Folder({ folder, onUpdate }: FolderProps) {
             <Folder
               key={childFolder.name}
               folder={childFolder}
-              onUpdate={onUpdate}
+              onUpdate={(updatedChildFolder) => {
+                const updatedFolders = folder.folders!.map((f) =>
+                  f.name === updatedChildFolder.name ? updatedChildFolder : f
+                );
+                onUpdate({ ...folder, folders: updatedFolders });
+              }}
+              onDelete={(name) => {
+                const newFolders = folder.folders?.filter(
+                  (f) => f.name !== name
+                );
+                onUpdate({ ...folder, folders: newFolders });
+              }}
             />
           ))}
         </ul>
