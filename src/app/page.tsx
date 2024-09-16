@@ -11,7 +11,46 @@ type Folder = {
 };
 
 export default function Home() {
-  let importedNodes: Folder[] = [];
+  let importedNodes: Folder[] = [
+    {
+      name: "Folder 1",
+      folders: [
+        {
+          name: "Folder 1.1",
+          folders: [
+            {
+              name: "Folder 1.1.1",
+            },
+            {
+              name: "Folder 1.1.2",
+            },
+          ],
+        },
+        {
+          name: "Folder 1.2",
+        },
+      ],
+    },
+    {
+      name: "Folder 2",
+      folders: [
+        {
+          name: "Folder 2.1",
+          folders: [
+            {
+              name: "Folder 2.1.1",
+            },
+            {
+              name: "Folder 2.1.2",
+            },
+          ],
+        },
+        {
+          name: "Folder 2.2",
+        },
+      ],
+    },
+  ];
 
   const [nodes, setNodes] = useState<Folder[]>(importedNodes);
   const [editorInstance, setEditorInstance] = useState<any>(null);
